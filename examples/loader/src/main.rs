@@ -15,26 +15,36 @@ use core::{
 
 #[derive(Clone, Copy)]
 struct ImageHeader {
+    app_num: u32,
+}
+
+#[derive(Clone, Copy)]
+struct AppHeader {
     app_size: usize,
 }
 
 #[cfg_attr(feature = "axstd", no_mangle)]
 fn main() {
-    let pflash_start = PLASH_START as *const u8;
 
     println!("Load payload ...");
 
-    let image_header = unsafe {*(pflash_start as *const ImageHeader)};
+    let image_header = unsafe {*(PLASH_START as *const ImageHeader)};
+    let app_num = image_header.app_num;
+    println!("app_num: {}", app_num);
 
-    let app_size = image_header.app_size;
+    let mut offset = PLASH_START + size_of::<ImageHeader>();
 
-    println!("App size: {}", app_size);
+    for _i in 0..app_num {
+        let app_header = unsafe {*(offset as *const AppHeader)};
+        let app_size = app_header.app_size;
+        println!("app_size: {}", app_size);
 
-    let code = unsafe {
-        from_raw_parts(pflash_start.add(size_of::<ImageHeader>()), app_size.max(MAX_APP_SIZE))
-    };
+        offset += size_of::<AppHeader>();
+        let app = unsafe {from_raw_parts(offset as *const u8, app_size.max(MAX_APP_SIZE))};
+        println!("app: {:?}", &app[0..10.min(app_size)]);
 
-    println!("content: {:?}: ", &code[..10.min(app_size)]);
+        offset += app_size;
+    }
 
     println!("Load payload ok!");
 }
