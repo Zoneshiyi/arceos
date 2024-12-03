@@ -68,6 +68,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "arceos-loader"
+version = "0.1.0"
+dependencies = [
+ "axstd",
+]
+
+[[package]]
 name = "arceos-shell"
 version = "0.1.0"
 dependencies = [
