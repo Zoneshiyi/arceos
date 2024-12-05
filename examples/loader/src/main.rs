@@ -3,7 +3,9 @@
 #![feature(asm_const)]
 
 #[cfg(feature = "axstd")]
-use axstd::{
+use axstd as std;
+
+use std::{
     println,
     process::exit,
 };
@@ -50,7 +52,7 @@ fn abi_putchar(c: char) {
     println!("[ABI:Print] {c}");
 }
 
-fn abi_exit() {
+fn abi_exit() -> ! {
     println!("[ABI:Exit] Exit!");
     exit(0);
 }
@@ -81,6 +83,7 @@ fn main() {
         offset_of_image += app_size;
         offset_of_exec_zone += app_size;
     }
+    println!("Load payload ok!");
 
     register_abi(SYS_HELLO, abi_hello as usize);
     register_abi(SYS_PUTCHAR, abi_putchar as usize);
@@ -88,23 +91,14 @@ fn main() {
 
     println!("Execute app ...");
 
-    let arg0= b'A';
+    // execute app
     unsafe { core::arch::asm!("
-        li      t0, {abi_num}
-        slli    t0, t0, 3
-        la      t1, {abi_table}
-        add     t1, t1, t0
-        ld      t1, (t1)
-        jalr    t1
+        la      a7, {abi_table}
         li      t2, {run_start}
         jalr    t2
         j       .",
         run_start = const RUN_START,
         abi_table = sym ABI_TABLE,
-        //abi_num = const SYS_HELLO,
-        abi_num = const SYS_EXIT,
-        in("a0") arg0,
     )}
 
-    println!("Load payload ok!");
 }
