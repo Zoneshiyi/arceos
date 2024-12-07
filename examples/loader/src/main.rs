@@ -49,7 +49,14 @@ fn abi_hello() {
 }
 
 fn abi_putchar(c: char) {
-    println!("[ABI:Print] {c}");
+    const LEGACY_CONSOLE_PUTCHAR: usize = 1;
+    unsafe {
+        core::arch::asm!(
+            "ecall",
+            in("a7") LEGACY_CONSOLE_PUTCHAR,
+            in("a0") c as usize,
+        );
+    }
 }
 
 fn abi_exit() -> ! {
@@ -97,7 +104,7 @@ fn main() {
         li      t2, {run_start}
         jalr    t2
         j       .",
-        run_start = const RUN_START,
+        run_start = const RUN_START+0x1010,
         abi_table = sym ABI_TABLE,
     )}
 
