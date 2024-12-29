@@ -9,4 +9,4 @@ authors = ["Zoneshiyi <zoneshiyi@163.com>"]
 [dependencies]
 axstd = { workspace = true }
 axlog = { workspace = true }
-elf = { version = "0.7.4", default-features = false, features=["to_str"] }
+elf = { version = "0.7.4", default-features = false}
